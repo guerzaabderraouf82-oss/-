@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاكي القلابات المتقدم - الأستاذ قرزة عبد الرؤوف</title>
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --secondary: #9d50bb;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --dark-bg: #0a192f;
+            --panel-bg: #112240;
+            --text-light: #e6f1ff;
+            --r-color: #ff4b2b;
+            --s-color: #1fddff;
+            --q-color: #00f260;
+            --t-color: #ff00ff; 
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            background-image: linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px; /* تقليل الحواف للهواتف */
+        }
+
+        .glass-card {
+            background: var(--panel-bg);
+            border: 1px solid #233554;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 1150px;
+            box-sizing: border-box;
+        }
+
+        header { text-align: center; margin-bottom: 20px; }
+        header h1 { 
+            margin: 10px 0; 
+            color: var(--primary);
+            font-size: clamp(1.2rem, 5vw, 2.2rem); /* حجم خط مرن */
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+        .teacher-badge { 
+            color: var(--primary); 
+            font-weight: bold; 
+            letter-spacing: 1px;
+            background: rgba(0, 212, 255, 0.1);
+            padding: 5px 15px;
+            border-radius: 50px;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+
+        .toolbar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #1d2d50;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-label { 
+            font-size: 0.8rem; 
+            color: #8892b0; 
+            border-bottom: 1px solid #233554; 
+            padding-bottom: 4px; 
+            font-weight: bold;
+        }
+        
+        .btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        button, .nav-btn {
+            flex: 1;
+            min-width: 70px;
+            padding: 8px 4px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            background: #1d2d50;
+            color: white;
+            font-size: 0.85rem;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover, .nav-btn:hover { 
+            background: #233554; 
+            border-color: var(--primary);
+        }
+
+        button.active { 
+            background: var(--primary); 
+            color: var(--dark-bg); 
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4); 
+        }
+
+        .btn-r { border-bottom: 3px solid var(--r-color); }
+        .btn-s { border-bottom: 3px solid var(--s-color); }
+
+        /* حاوية الكانفاس لجعلها قابلة للتمرير الأفقي في الشاشات الصغيرة جداً */
+        .canvas-container {
+            width: 100%;
+            overflow-x: hidden; /* تغيير حسب الرغبة */
+            background: #ffffff;
+            border-radius: 10px;
+            border: 4px solid #112240;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        }
+
+        canvas {
+            display: block;
+            width: 100%; /* العرض يتكيف مع الحاوية */
+            height: auto; /* يحافظ على النسبة */
+        }
+
+        .footer { 
+            margin-top: 20px; 
+            font-size: 0.8rem; 
+            color: #8892b0;
+            text-align: center;
+            border-top: 1px solid #233554;
+            padding-top: 15px;
+            width: 100%;
+        }
+
+        .sys-btn-save { background: var(--primary) !important; color: var(--dark-bg) !important; }
+        .sys-btn-reset { border: 1px solid var(--danger); background: transparent !important; color: var(--danger) !important; }
+        .sys-btn-undo { border: 1px solid var(--warning); background: transparent !important; color: var(--warning) !important; }
+    </style>
+</head>
+<body>
+
+<div class="glass-card">
+    <header>
+        <div class="teacher-badge">مختبر الهندسة الكهربائية التعليمي</div>
+        <h1>محاكي المخطط الزمني للقلابات</h1>
+        <p style="color: #8892b0; margin: 5px 0;">إعداد الأستاذ: قرزة عبد الرؤوف</p>
+    </header>
+
+    <div class="toolbar">
+        <div class="control-group">
+            <div class="control-label">اختيار النموذج</div>
+            <div class="btn-group">
+                <button id="modeRS" onclick="changeMode('RS')">RS</button>
+                <button id="modeRSH" class="active" onclick="changeMode('RSH')">RSH</button>
+                <a href="JK.html" class="nav-btn">JK</a>
+                <a href="D.html" class="nav-btn" style="border-bottom: 3px solid var(--success);">D</a>
+                <a href="T.html" class="nav-btn" style="border-bottom: 3px solid var(--secondary);">T</a>
+            </div>
+        </div>
+
+        <div id="clockSettings" class="control-group">
+            <div class="control-label">جبهة الساعة (H)</div>
+            <div class="btn-group">
+                <button id="edgeRising" class="active" onclick="changeEdge('rising')">صاعدة ↑</button>
+                <button id="edgeFalling" onclick="changeEdge('falling')">نازلة ↓</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">إشارات المدخلات</div>
+            <div class="btn-group">
+                <button class="btn-r" onclick="addPoint('R', 1)">R=1</button>
+                <button class="btn-r" onclick="addPoint('R', 0)">R=0</button>
+                <button class="btn-s" onclick="addPoint('S', 1)">S=1</button>
+                <button class="btn-s" onclick="addPoint('S', 0)">S=0</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">إدارة المحاكاة</div>
+            <div class="btn-group">
+                <button class="sys-btn-reset" onclick="resetCurrent()">مسح</button>
+                <button class="sys-btn-undo" onclick="undoLastPoint()">تراجع</button>
+                <button class="sys-btn-save" onclick="download()">PNG</button>
+            </div>
+        </div>
+    </div>
+<div style="display: flex; gap: 20px; align-items: center; width: 100%; max-width: 1150px; flex-wrap: nowrap;">
+    
+    <div class="canvas-container" style="flex: 1; min-width: 0; max-width: 75%;">
+        <canvas id="mainCanvas" width="1250" height="750"></canvas>
+    </div>
+    
+    <div id="rsImageContainer" style="width: 25%; min-width: 200px; display: none; justify-content: center; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid #233554; border-radius: 10px; padding: 15px; box-sizing: border-box;">
+        <img src="photo_2026-05-17_16-03-14.png" alt="مخطط القلاب RS" style="max-width: 100%; height: auto; border-radius: 8px;">
+    </div>
+
+    <div id="rshImageContainer" style="width: 25%; min-width: 200px; display: none; justify-content: center; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid #233554; border-radius: 10px; padding: 15px; box-sizing: border-box;">
+        <img src="photo_2026-05-17_16-16-15.png" alt="مخطط القلاب RSH" style="max-width: 100%; height: auto; border-radius: 8px;">
+    </div>
+    
+</div>
+</div>
+
+<div class="footer">
+    تصميم الأستاذ قرزة عبد الرؤوف © 2026 | مخصص لطلبة هندسة الكهرباء
+</div>
+
+<script>
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let dataStore = {
+        'RS': { history: { R: [0], S: [0], Q: [0] }, edge: 'rising' },
+        'RSH': { history: { R: [0], S: [0], Q: [0] }, edge: 'rising' }
+    };
+
+    let currentMode = 'RSH';
+    const config = {
+        maxPoints: 14,
+        step: 75,
+        startX: 110,
+        yBases: { H: 140, R: 290, S: 440, Q: 610 }
+    };
+
+    function changeMode(m) {
+        currentMode = m;
+        document.getElementById('modeRS').className = m === 'RS' ? 'active' : '';
+        document.getElementById('modeRSH').className = m === 'RSH' ? 'active' : '';
+        document.getElementById('clockSettings').style.opacity = m === 'RS' ? '0.3' : '1';
+        let e = dataStore[currentMode].edge;
+        document.getElementById('edgeRising').className = e === 'rising' ? 'active' : '';
+        document.getElementById('edgeFalling').className = e === 'falling' ? 'active' : '';
+        if (m === 'RS') {
+            document.getElementById('rsImageContainer').style.display = 'flex';   // إظهار صورة RS
+            document.getElementById('rshImageContainer').style.display = 'none';  // إخفاء صورة RSH
+        } else if (m === 'RSH') {
+            document.getElementById('rsImageContainer').style.display = 'none';   // إخفاء صورة RS
+            document.getElementById('rshImageContainer').style.display = 'flex';  // إظهار صورة RSH
+        } else {
+            // في حال تم إضافة أنماط أخرى مستقبلاً يتم إخفاء الصورتين
+            document.getElementById('rsImageContainer').style.display = 'none';
+            document.getElementById('rshImageContainer').style.display = 'none';
+        }
+        
+        render();
+     }
+
+    function changeEdge(e) {
+        if (currentMode === 'RS') return;
+        dataStore[currentMode].edge = e;
+        document.getElementById('edgeRising').className = e === 'rising' ? 'active' : '';
+        document.getElementById('edgeFalling').className = e === 'falling' ? 'active' : '';
+        recalcQ();
+        render();
+    }
+
+   function addPoint(type, val) {
+        let store = dataStore[currentMode].history;
+        if (store.R.length >= config.maxPoints) return;
+        
+        if (type === 'R') {
+            store.R.push(val);
+            // التعديل: إذا تم جعل R=1، يتم إنزال S تلقائياً إلى 0 لمنع الحالة الممنوعة
+            if (val === 1) {
+                store.S.push(0);
+            } else {
+                store.S.push(store.S[store.S.length-1]);
+            }
+        } else {
+            store.S.push(val);
+            // التعديل: إذا تم جعل S=1، يتم إنزال R تلقائياً إلى 0 لمنع الحالة الممنوعة
+            if (val === 1) {
+                store.R.push(0);
+            } else {
+                store.R.push(store.R[store.R.length-1]);
+            }
+        }
+        recalcQ();
+        render();
+    }
+
+    function undoLastPoint() {
+        let store = dataStore[currentMode].history;
+        if (store.R.length > 1) {
+            store.R.pop();
+            store.S.pop();
+            recalcQ();
+            render();
+        }
+    }
+
+    function recalcQ() {
+        let store = dataStore[currentMode].history;
+        store.Q = [0];
+        let lastQ = 0;
+        for (let i = 1; i < store.R.length; i++) {
+            let r = store.R[i];
+            let s = store.S[i];
+            let currentQ = lastQ;
+            if (currentMode === 'RS') {
+                if (s === 1 && r === 0) currentQ = 1;
+                else if (s === 0 && r === 1) currentQ = 0;
+                else if (s === 1 && r === 1) currentQ = -1; 
+            } else {
+                if (s === 1 && r === 0) currentQ = 1;
+                else if (s === 0 && r === 1) currentQ = 0;
+                else if (s === 1 && r === 1) currentQ = NaN; 
+                else currentQ = lastQ;
+            }
+            store.Q.push(currentQ);
+            lastQ = (isNaN(currentQ) || currentQ === -1) ? 0 : currentQ;
+        }
+    }
+
+    function drawArrowHead(x, y, angle) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(-10, -10);
+        ctx.lineTo(0, 0);
+        ctx.lineTo(-10, 10);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+   function drawAxis(y, label, color) {
+        ctx.strokeStyle = '#2c3e50';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(config.startX, y + 20);
+        ctx.lineTo(config.startX, y - 90);
+        ctx.stroke();
+        drawArrowHead(config.startX, y - 90, -Math.PI/2);
+        const endX = canvas.width - 60;
+        ctx.beginPath();
+        ctx.moveTo(config.startX - 20, y);
+        ctx.lineTo(endX, y);
+        ctx.stroke();
+        drawArrowHead(endX, y, 0);
+        ctx.fillStyle = '#2c3e50';
+        ctx.font = 'italic bold 22px Georgia, "Times New Roman", serif'; // تحسين خط زمن t
+        ctx.fillText('t', endX + 20 , y + 08);
+        ctx.fillStyle = color;
+        
+        // التعديل الجديد: جعل الخط مائل وبحواف مدببة كلاسيكية احترافية مثل الصورة
+        ctx.font = 'italic bold 36px Georgia, "Times New Roman", serif'; 
+        
+        ctx.fillText(label, 60, y - 35); // ضبط مكان الظهور ليتناسب مع التصميم الجديد
+    }
+
+    function drawClock() {
+        if (currentMode !== 'RSH') return;
+        ctx.strokeStyle = '#34495e';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        let x = config.startX;
+        ctx.moveTo(x, config.yBases.H);
+        for (let i = 0; i < config.maxPoints; i++) {
+            ctx.lineTo(x + config.step/2, config.yBases.H);
+            ctx.lineTo(x + config.step/2, config.yBases.H - 65);
+            ctx.lineTo(x + config.step, config.yBases.H - 65);
+            ctx.lineTo(x + config.step, config.yBases.H);
+            x += config.step;
+        }
+        ctx.stroke();
+        x = config.startX;
+        let edge = dataStore['RSH'].edge;
+        for (let i = 0; i < config.maxPoints; i++) {
+            let arrowX = (edge === 'rising') ? x + config.step/2 : x + config.step;
+            drawTimingArrow(arrowX, config.yBases.H - 32, edge === 'rising' ? 'up' : 'down');
+            ctx.save();
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = 'rgba(231, 76, 60, 0.3)';
+            ctx.beginPath();
+            ctx.moveTo(arrowX, config.yBases.H);
+            ctx.lineTo(arrowX, 680);
+            ctx.stroke();
+            ctx.restore();
+            x += config.step;
+        }
+    }
+
+    function drawTimingArrow(x, y, dir) {
+        ctx.save();
+        ctx.strokeStyle = '#e74c3c';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        if(dir === 'up') {
+            ctx.moveTo(x-8, y+5); ctx.lineTo(x, y-8); ctx.lineTo(x+8, y+5);
+        } else {
+            ctx.moveTo(x-8, y-8); ctx.lineTo(x, y+5); ctx.lineTo(x+8, y-8);
+        }
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    function drawWave(data, yBase, color, isQ = false) {
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 5;
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        let x = config.startX;
+        for (let i = 0; i < data.length; i++) {
+            let val = data[i];
+            let y = (val === 1) ? yBase - 65 : (val === 0 ? yBase : yBase - 32);
+            let nextX = config.startX + (i + 1) * config.step;
+            if (i === 0) { ctx.moveTo(x, y); } else {
+                if (isQ && currentMode === 'RSH') {
+                    let edge = dataStore['RSH'].edge;
+                    let triggerX = (edge === 'rising') ? (x + config.step/2) : (x + config.step);
+                    ctx.lineTo(triggerX, (data[i-1] === 1 ? yBase-65 : (data[i-1] === 0 ? yBase : yBase-32)));
+                    ctx.lineTo(triggerX, y);
+                } else {
+                    ctx.lineTo(x, (data[i-1] === 1 ? yBase-65 : (data[i-1] === 0 ? yBase : yBase-32)));
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.lineTo(nextX, y);
+            x = nextX;
+        }
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#f0f2f7';
+        for (let i = 0; i <= config.maxPoints; i++) {
+            ctx.beginPath();
+            ctx.moveTo(config.startX + i * config.step, 40);
+            ctx.lineTo(config.startX + i * config.step, 700);
+            ctx.stroke();
+        }
+        let currentHistory = dataStore[currentMode].history;
+        if (currentMode === 'RSH') {
+            drawAxis(config.yBases.H, 'H', '#34495e');
+            drawClock();
+        }
+        drawAxis(config.yBases.R, 'R', '#e74c3c');
+        drawWave(currentHistory.R, config.yBases.R, '#e74c3c');
+        drawAxis(config.yBases.S, 'S', '#3498db');
+        drawWave(currentHistory.S, config.yBases.S, '#3498db');
+        drawAxis(config.yBases.Q, 'Q', '#2ecc71');
+        drawWave(currentHistory.Q, config.yBases.Q, '#2ecc71', true);
+    }
+
+    function resetCurrent() {
+        dataStore[currentMode].history = { R: [0], S: [0], Q: [0] };
+        render();
+    }
+
+    function download() {
+        const link = document.createElement('a');
+        link.download = `Guerza-FlipFlops-Simulation.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+    }
+    // استدعاء دالة التغيير عند البداية لتظهر الصورة المناسبة للوضع الافتراضي RSH فوراً
+    changeMode(currentMode);
+</script>
+</body>
+</html>

@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>محاكي القلاب JK - المختبر الهندسي</title>
+
+    <style>
+
+        :root {
+
+            --primary: #00d4ff;
+
+            --success: #2ecc71;
+
+            --warning: #f1c40f;
+
+            --danger: #e74c3c;
+
+            --dark-bg: #0a192f;
+
+            --panel-bg: #112240;
+
+            --text-light: #e6f1ff;
+
+        }
+
+
+
+        body { 
+
+            background-color: var(--dark-bg);
+
+            background-image: linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+
+                              linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+
+            background-size: 30px 30px;
+
+            display: flex; 
+
+            flex-direction: column; 
+
+            align-items: center; 
+
+            padding: 10px; 
+
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+
+            margin: 0;
+
+            color: var(--text-light);
+
+            min-height: 100vh;
+
+        }
+
+
+
+        h3 { 
+
+            color: var(--primary); 
+
+            background: var(--panel-bg);
+
+            padding: 15px 25px;
+
+            border-radius: 10px;
+
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+
+            margin: 20px 0;
+
+            border-bottom: 3px solid var(--primary);
+
+            text-align: center;
+
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
+
+            max-width: 95%;
+
+        }
+
+
+
+        .controls { 
+
+            background: var(--panel-bg);
+
+            padding: 20px; 
+
+            border-radius: 12px; 
+
+            margin-bottom: 25px; 
+
+            display: grid; 
+
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+
+            gap: 20px; 
+
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+
+            width: 100%;
+
+            max-width: 1150px;
+
+            box-sizing: border-box;
+
+            border: 1px solid #233554;
+
+        }
+
+
+
+        .btn-group { 
+
+            display: flex; 
+
+            flex-direction: column; 
+
+            align-items: center; 
+
+            gap: 12px; 
+
+            padding: 10px;
+
+            border-bottom: 1px solid #233554;
+
+        }
+
+
+
+        @media (min-width: 768px) {
+
+            .btn-group { border-bottom: none; border-left: 1px solid #233554; }
+
+            .btn-group:last-child { border-left: none; }
+
+        }
+
+
+
+        .label { 
+
+            color: #8892b0; 
+
+            font-size: 14px; 
+
+            font-weight: bold; 
+
+            margin-bottom: 8px;
+
+            text-align: center;
+
+        }
+
+
+
+        /* تعديل حجم الأزرار لتكون أكبر وأوضح */
+
+        button, .nav-link { 
+
+            padding: 12px 20px; 
+
+            border: 1px solid transparent; 
+
+            border-radius: 6px; 
+
+            cursor: pointer; 
+
+            font-weight: bold; 
+
+            transition: all 0.3s ease; 
+
+            background: #1d2d50;
+
+            color: var(--text-light);
+
+            text-decoration: none;
+
+            text-align: center;
+
+            font-size: 15px; /* زيادة حجم الخط */
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            min-width: 100px;
+
+        }
+
+
+
+        button:hover, .nav-link:hover { 
+
+            background: #233554;
+
+            border-color: var(--primary);
+
+            color: var(--primary);
+
+            transform: translateY(-2px);
+
+        }
+
+
+
+        .btn-j { border-bottom: 4px solid var(--success); }
+
+        .btn-k { border-bottom: 4px solid var(--warning); }
+
+        
+
+        .btn-edge.active, .btn-active.active { 
+
+            background-color: var(--primary); 
+
+            color: var(--dark-bg);
+
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+
+        }
+
+
+
+        .btn-reset { color: var(--danger); border: 1px solid var(--danger); background: transparent; }
+
+        .btn-reset:hover { background: var(--danger); color: white; }
+
+
+
+        .canvas-container {
+
+            width: 100%;
+
+            max-width: 1150px;
+
+            overflow-x: auto;
+
+            border: 6px solid #112240;
+
+            border-radius: 8px;
+
+            background: #ffffff;
+
+            box-shadow: 0 0 40px rgba(0,0,0,0.4);
+
+        }
+
+
+
+        canvas { 
+
+            display: block;
+
+            margin: 0 auto;
+
+        }
+
+
+
+        .footer {
+
+            margin: 25px 0;
+
+            color: #8892b0;
+
+            font-size: 14px;
+
+            border-top: 1px solid #233554;
+
+            padding-top: 15px;
+
+            width: 100%;
+
+            text-align: center;
+
+        }
+
+
+
+        .action-btns {
+
+            display: flex;
+
+            flex-direction: row;
+
+            flex-wrap: wrap;
+
+            justify-content: center;
+
+            gap: 10px;
+
+            width: 100%;
+
+        }
+
+
+
+        .btn-back {
+
+            border-bottom: 4px solid var(--primary);
+
+            background: rgba(0, 212, 255, 0.1);
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+
+
+<h3>مختبر الهندسة الكهربائية: محاكي القلاب JK</h3>
+
+
+
+<div class="controls">
+
+    <div class="btn-group">
+
+        <span class="label">مداخل الإرغام (Asynchronous)</span>
+
+        <div class="action-btns">
+
+            <button id="activeHighBtn" class="btn-active active" onclick="setActiveLevel('high')">PR / CLR</button>
+
+            <button id="activeLowBtn" class="btn-active" onclick="setActiveLevel('low')"><span style="text-decoration: overline;">PR</span> / <span style="text-decoration: overline;">CLR</span></button>
+
+        </div>
+
+    </div>
+
+    <div class="btn-group">
+
+        <span class="label">نوع الجبهة (H)</span>
+
+        <div class="action-btns">
+
+            <button id="risingBtn" class="btn-edge" onclick="setEdge('rising')">صاعدة ↑</button>
+
+            <button id="fallingBtn" class="btn-edge active" onclick="setEdge('falling')">نازلة ↓</button>
+
+        </div>
+
+    </div>
+
+    <div class="btn-group">
+
+        <span class="label">النبضات J</span>
+
+        <div class="action-btns">
+
+            <button class="btn-j" onclick="setSignalPulse('J', 1)">J = 1</button>
+
+            <button class="btn-j" style="border-bottom-color: #1b5e20;" onclick="setSignalPulse('J', 0)">J = 0</button>
+
+        </div>
+
+        </div>
+
+    <div class="btn-group">
+
+        <span class="label">النبضات K</span>
+
+        <div class="action-btns">
+
+            <button class="btn-k" onclick="setSignalPulse('K', 1)">K = 1</button>
+
+            <button class="btn-k" style="border-bottom-color: #b35400;" onclick="setSignalPulse('K', 0)">K = 0</button>
+
+        </div>
+
+    </div>
+
+    <div class="btn-group action-btns" style="border:none;">
+
+        <span class="label">الأوامر</span>
+
+        <div class="action-btns">
+
+            <a href="index.html" class="nav-link btn-back">⬅ الرئيسية</a>
+
+            <button class="btn-reset" onclick="resetSim()">مسح</button>
+
+            <button onclick="undoLastMove()">⟲ تراجع</button>
+
+            <button style="background: var(--primary); color: var(--dark-bg);" onclick="downloadImage()">💾 حفظ</button>
+
+        </div>
+
+    </div>
+ 
+    <img src="photo_2026-08-09_17-08-52.png" alt="رمز القلاب JK" style="max-width: 250px; width: 100%; height: auto; margin-top: 5px; margin-right: 55px; display: block; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+
+</div>
+
+ <div class="canvas-container">
+
+    <canvas id="jkCanvas" width="1150" height="650"></canvas>
+
+</div>
+
+
+
+<div class="footer">
+
+    من تصميم الأستاذ قرزة عبد الرؤوف | مخصص لطلاب السنة الثالثة تقني رياضي
+
+</div>
+
+
+
+<script>
+
+    // المنطق البرمجي يبقى كما هو دون تغيير لضمان دقة النتائج العلمية
+
+    const canvas = document.getElementById('jkCanvas');
+
+    const ctx = canvas.getContext('2d');
+
+    const startX = 140; 
+
+    const width = 950;
+
+    const step = 44; 
+
+    let currentEdge = 'falling';
+
+    let activeLevel = 'high'; 
+
+    let actionHistory = [];
+
+
+
+    const baseForcingData = {
+
+        PR: [[0,0], [380,1], [530,0], [950,0]],
+
+        CLR: [[0,0], [10,1], [35,0], [860,1], [900,0], [950,0]]
+
+    };
+
+
+
+    let staticSignals = [
+
+        { name: 'PR', color: '#b22222', data: [] },
+
+        { name: 'CLR', color: '#ff4500', data: [] },
+
+        { name: 'H', color: '#b22222', isClock: true }
+
+    ];
+
+
+
+    let dynamicData = { J: [[0,0]], K: [[0,0]], Q: [[0,0]] };
+
+
+
+    function updateStaticSignals() {
+
+        staticSignals[0].data = baseForcingData.PR.map(p => [p[0], activeLevel === 'high' ? p[1] : 1 - p[1]]);
+
+        staticSignals[1].data = baseForcingData.CLR.map(p => [p[0], activeLevel === 'high' ? p[1] : 1 - p[1]]);
+
+        staticSignals[0].name = activeLevel === 'high' ? 'PR' : 'PR_BAR';
+
+        staticSignals[1].name = activeLevel === 'high' ? 'CLR' : 'CLR_BAR';
+
+    }
+
+
+
+    function setActiveLevel(level) {
+
+        activeLevel = level;
+
+        document.getElementById('activeHighBtn').classList.toggle('active', level === 'high');
+
+        document.getElementById('activeLowBtn').classList.toggle('active', level === 'low');
+
+        updateStaticSignals();
+
+        calculateQ();
+
+        draw();
+
+    }
+
+
+
+    function setEdge(edge) {
+
+        currentEdge = edge;
+
+        document.getElementById('risingBtn').classList.toggle('active', edge === 'rising');
+
+        document.getElementById('fallingBtn').classList.toggle('active', edge === 'falling');
+
+        calculateQ();
+
+        draw();
+
+    }
+
+
+
+    function setSignalPulse(sig, val) {
+
+        let lastTime = dynamicData[sig][dynamicData[sig].length - 1][0];
+
+        if (lastTime < width) {
+
+            dynamicData[sig].push([lastTime, val]);
+
+            let nextTime = Math.min(lastTime + step, width);
+
+            dynamicData[sig].push([nextTime, val]);
+
+            actionHistory.push(sig);
+
+            calculateQ();
+
+            draw();
+
+        }
+
+    }
+
+
+
+    function undoLastMove() {
+
+        if (actionHistory.length > 0) {
+
+            let lastSig = actionHistory.pop();
+
+            if (dynamicData[lastSig].length > 1) {
+
+                dynamicData[lastSig].splice(-2, 2);
+
+                calculateQ();
+
+                draw();
+
+            }
+
+        }
+
+    }
+
+
+
+    function calculateQ() {
+
+        dynamicData.Q = [[0,0]];
+
+        let stateQ = 0;
+
+        let maxTimeJ = dynamicData.J[dynamicData.J.length-1][0];
+
+        let maxTimeK = dynamicData.K[dynamicData.K.length-1][0];
+
+        let maxInputTime = Math.max(maxTimeJ, maxTimeK);
+
+        const edgeOffset = (currentEdge === 'rising') ? 40 : (40 + step/2);
+
+
+
+        for (let x = 0; x <= width; x++) {
+
+            let pr = getValAt(staticSignals[0].data, x);
+
+            let clr = getValAt(staticSignals[1].data, x);
+
+            let isPrActive = (activeLevel === 'high' ? pr === 1 : pr === 0);
+
+            let isClrActive = (activeLevel === 'high' ? clr === 1 : clr === 0);
+
+
+
+            if (isPrActive) { stateQ = 1; } 
+
+            else if (isClrActive) { stateQ = 0; } 
+
+            else {
+
+                if ((x - edgeOffset) % step === 0 && x > 0) {
+
+                    if (x <= maxInputTime) {
+
+                        let j = getValAt(dynamicData.J, x);
+
+                        let k = getValAt(dynamicData.K, x);
+
+                        if (j === 1 && k === 0) stateQ = 1;
+
+                        else if (j === 0 && k === 1) stateQ = 0;
+
+                        else if (j === 1 && k === 1) stateQ = 1 - stateQ;
+
+                    }
+
+                }
+
+            }
+
+            if (stateQ !== dynamicData.Q[dynamicData.Q.length-1][1] || x === width) {
+
+                dynamicData.Q.push([x, stateQ]);
+
+            }
+
+        }
+
+    }
+
+
+
+    function getValAt(data, time) {
+
+        let val = 0;
+
+        for (let i = 0; i < data.length; i++) {
+
+            if (time >= data[i][0]) val = data[i][1]; else break;
+
+        }
+
+        return val;
+
+    }
+
+
+
+    function drawArrow(ctx, fromx, fromy, tox, toy) {
+
+        const headlen = 10;
+
+        const dx = tox - fromx;
+
+        const dy = toy - fromy;
+
+        const angle = Math.atan2(dy, dx);
+
+        ctx.beginPath();
+
+        ctx.moveTo(fromx, fromy);
+
+        ctx.lineTo(tox, toy);
+
+        ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+
+        ctx.moveTo(tox, toy);
+
+        ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+
+        ctx.stroke();
+
+    }
+
+
+
+    function drawForcingLines(sig) {
+
+        sig.data.forEach((p, i) => {
+
+            let isActive = (activeLevel === 'high' ? p[1] === 1 : p[1] === 0);
+
+            if (isActive) { 
+
+                let endTime = sig.data[i+1] ? sig.data[i+1][0] : width;
+
+                ctx.setLineDash([5, 5]);
+
+                ctx.strokeStyle = sig.color;
+
+                ctx.lineWidth = 1;
+
+                ctx.beginPath();
+
+                ctx.moveTo(startX + p[0], 40); ctx.lineTo(startX + p[0], 610);
+
+                ctx.moveTo(startX + endTime, 40); ctx.lineTo(startX + endTime, 610);
+
+                ctx.stroke();
+
+                ctx.setLineDash([]);
+
+            }
+
+        });
+
+    }
+
+
+
+    function resetSim() {
+
+        dynamicData.J = [[0,0]]; dynamicData.K = [[0,0]]; dynamicData.Q = [[0,0]];
+
+        actionHistory = [];
+
+        calculateQ();
+
+        draw();
+
+    }
+
+
+
+    function downloadImage() {
+
+        const link = document.createElement('a');
+
+        link.download = 'JK_Simulation_Prof_Qarza.png';
+
+        link.href = canvas.toDataURL('image/png');
+
+        link.click();
+
+    }
+
+
+
+    function draw() {
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        
+
+        ctx.setLineDash([3, 3]); ctx.strokeStyle = "#e0e0e0";
+
+        const gridOffset = (currentEdge === 'rising') ? 40 : (40 + step/2);
+
+        for (let x = gridOffset; x < width; x += step) {
+
+            ctx.beginPath(); ctx.moveTo(startX + x, 40); ctx.lineTo(startX + x, 610); ctx.stroke();
+
+        }
+
+        ctx.setLineDash([]);
+
+
+
+        drawForcingLines(staticSignals[0]);
+
+        drawForcingLines(staticSignals[1]);
+
+
+
+        const allSignals = [...staticSignals, 
+
+            { name: 'J', color: '#2ecc71', data: dynamicData.J },
+
+            { name: 'K', color: '#f1c40f', data: dynamicData.K },
+
+            { name: 'Q', color: '#007bff', data: dynamicData.Q }
+
+        ];
+
+
+
+       allSignals.forEach((sig, index) => {
+            const baseY = (index + 1) * 95;
+            ctx.strokeStyle = "#2c3e50"; ctx.lineWidth = 2;
+            
+            // رسم محور الزمن الأفقي (متروك تماماً كما عدلته أنت)
+            drawArrow(ctx, startX, baseY, startX + width + 30, baseY);
+            ctx.fillStyle = "#2c3e50";
+            
+            // تعديل 1: جعل حرف الزمن t مائل وبحجم أوضح (Georgia) (متروك تماماً كما عدلته أنت)
+            ctx.font = "italic bold 22px Georgia, 'Times New Roman', serif";
+            ctx.fillText("t", startX + width + 45, baseY + 5);
+
+            // رسم المحور العمودي للإشارة
+            drawArrow(ctx, startX, baseY, startX, baseY - 65);
+            
+            // تعديل 2: تلوين الحرف بنفس لون المنحنى الخاص به ديناميكياً
+            ctx.fillStyle = sig.color; 
+            
+            // تعديل 3: تطبيق الخط المائل ذو الحواف الكلاسيكية وتكبير الحجم ليصبح 32px
+            ctx.font = "italic bold 32px Georgia, 'Times New Roman', serif";
+            
+            let nameOnly = sig.name.replace('_BAR', '');
+            let textX = 90; // الإحداثي الخاص بك حافظت عليه تماماً
+            ctx.fillText(nameOnly, textX, baseY - 15);
+
+            // قياس العرض الفعلي للنص لاستخدامه في الحسابات عند الحاجة
+            let textMetrics = ctx.measureText(nameOnly);
+
+            // تعديل 4 منفصل: إحداثيات بار الـ PR_BAR فقط
+            if (sig.name === 'PR_BAR') {
+                ctx.strokeStyle = sig.color; 
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                // يمكنك تعديل الأرقام بالأسفل بحرية حتى يتطابق فوق PR تماماً
+                ctx.moveTo(textX - 55, baseY - 43); 
+                ctx.lineTo(textX + textMetrics.width - 40, baseY - 43);
+                ctx.stroke();
+            }
+
+            // تعديل 5 منفصل: إحداثيات بار الـ CLR_BAR فقط (الذي قمت أنت بضبطه)
+            if (sig.name === 'CLR_BAR') {
+                ctx.strokeStyle = sig.color; 
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                // الأرقام الحالية التي ضبطتها أنت لـ CLR حافظت عليها كما هي
+                ctx.moveTo(textX - 75, baseY - 43); 
+                ctx.lineTo(textX + textMetrics.width - 60, baseY - 43);
+                ctx.stroke();
+            }
+
+
+            ctx.strokeStyle = sig.color; ctx.lineWidth = 3;
+
+            if (sig.isClock) {
+
+                ctx.beginPath();
+
+                for (let x = 40; x < width - 20; x += step) {
+
+                    ctx.moveTo(startX + x, baseY); ctx.lineTo(startX + x, baseY - 35);
+
+                    ctx.lineTo(startX + x + step/2, baseY - 35); ctx.lineTo(startX + x + step/2, baseY);
+
+                }
+
+                ctx.stroke();
+
+                for (let x = 40; x < width - 20; x += step) {
+
+                    let ax = (currentEdge === 'rising') ? startX + x : startX + x + step/2;
+
+                    ctx.fillStyle = sig.color; ctx.beginPath();
+
+                    if (currentEdge === 'rising') {
+
+                        ctx.moveTo(ax, baseY - 23); ctx.lineTo(ax - 5, baseY - 13); ctx.lineTo(ax + 5, baseY - 13);
+
+                    } else {
+
+                        ctx.moveTo(ax, baseY - 12); ctx.lineTo(ax - 5, baseY - 22); ctx.lineTo(ax + 5, baseY - 22);
+
+                    }
+
+                    ctx.fill();
+
+                }
+
+            } else {
+
+                ctx.beginPath();
+
+                if (sig.data.length > 0) {
+
+                    let lastY = sig.data[0][1] ? baseY - 35 : baseY;
+
+                    ctx.moveTo(startX + sig.data[0][0], lastY);
+
+                    sig.data.forEach(p => {
+
+                        const ty = p[1] ? baseY - 35 : baseY;
+
+                        ctx.lineTo(startX + p[0], lastY); ctx.lineTo(startX + p[0], ty);
+
+                        lastY = ty;
+
+                    });
+
+                    if (sig.name === 'Q') { ctx.lineTo(startX + width, lastY); }
+
+                }
+
+                ctx.stroke();
+
+            }
+
+        });
+
+    }
+
+
+
+    updateStaticSignals();
+
+    calculateQ();
+
+    draw();
+
+</script>
+
+</body>
+
+</html>
