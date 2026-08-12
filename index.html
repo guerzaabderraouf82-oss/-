@@ -153,6 +153,86 @@
         .sys-btn-save { background: var(--primary) !important; color: var(--dark-bg) !important; }
         .sys-btn-reset { border: 1px solid var(--danger); background: transparent !important; color: var(--danger) !important; }
         .sys-btn-undo { border: 1px solid var(--warning); background: transparent !important; color: var(--warning) !important; }
+
+/* زر التكبير العلوي */
+        .expand-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            background: var(--primary);
+            color: var(--dark-bg);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* إخفاء أزرار الشاشة الكاملة في الوضع العادي */
+        .fullscreen-controls {
+            display: none;
+        }
+
+        /* ========================================== */
+        /* تنسيقات التكيف الذكي مع جميع أجهزة الشاشة الكاملة */
+        /* ========================================== */
+        :fullscreen #canvasWrapper, 
+        :-webkit-full-screen #canvasWrapper {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            background: var(--dark-bg) !important;
+            padding: 10px !important;
+            box-sizing: border-box !important;
+            border-radius: 0 !important;
+            border: none !important;
+        }
+
+        /* إخفاء زر التكبير داخل الشاشة الكاملة */
+        :fullscreen .expand-btn, 
+        :-webkit-full-screen .expand-btn {
+            display: none;
+        }
+
+        /* التكيف الذكي للكانفاس لملء أقصى مساحة ممكنة مع الحفاظ على الأبعاد */
+        :fullscreen #mainCanvas, 
+        :-webkit-full-screen #mainCanvas {
+            width: 100% !important;
+            height: auto !important;
+            max-height: calc(100vh - 80px) !important;
+            object-fit: contain;
+            background: white;
+            border-radius: 8px;
+            margin: auto 0;
+        }
+
+        /* أزرار التحكم المتجاوبة أسفل الشاشة */
+        :fullscreen .fullscreen-controls, 
+        :-webkit-full-screen .fullscreen-controls {
+            display: flex !important;
+            gap: 8px;
+            width: 100%;
+            max-width: 900px;
+            justify-content: center;
+            padding: 5px 0;
+        }
+
+        .fullscreen-controls button {
+            flex: 1;
+            padding: 12px 6px;
+            font-size: clamp(0.75rem, 2.5vw, 1rem);
+            white-space: nowrap;
+        }
+
+        .fullscreen-controls .exit-btn {
+            background: var(--danger) !important;
+            color: white !important;
+        }
     </style>
 </head>
 <body>
@@ -205,8 +285,21 @@
     </div>
 <div style="display: flex; gap: 20px; align-items: center; width: 100%; max-width: 1150px; flex-wrap: nowrap;">
     
-    <div class="canvas-container" style="flex: 1; min-width: 0; max-width: 75%;">
+    <!-- الحاوية مع زر التكبير والأزرار السفلية للشاشة الكاملة -->
+    <div id="canvasWrapper" class="canvas-container" style="flex: 1; min-width: 0; max-width: 75%; position: relative;">
+        <!-- زر تكبير الشاشة يظهر فقط في الوضع العادي -->
+        <button class="expand-btn" onclick="toggleFullScreen()">تكبير الشاشة ⛶</button>
+
         <canvas id="mainCanvas" width="1250" height="750"></canvas>
+
+        <!-- أزرار التحكم تظهر حصراً عند تكبير الشاشة -->
+        <div class="fullscreen-controls">
+            <button class="btn-r" onclick="addPoint('R', 1)">R=1</button>
+            <button class="btn-r" onclick="addPoint('R', 0)">R=0</button>
+            <button class="btn-s" onclick="addPoint('S', 1)">S=1</button>
+            <button class="btn-s" onclick="addPoint('S', 0)">S=0</button>
+            <button class="exit-btn" onclick="toggleFullScreen()">خروج ✕</button>
+        </div>
     </div>
     
     <div id="rsImageContainer" style="width: 25%; min-width: 200px; display: none; justify-content: center; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid #233554; border-radius: 10px; padding: 15px; box-sizing: border-box;">
@@ -217,7 +310,6 @@
         <img src="photo_2026-05-17_16-16-15.png" alt="مخطط القلاب RSH" style="max-width: 100%; height: auto; border-radius: 8px;">
     </div>
     
-</div>
 </div>
 
 <div class="footer">
@@ -475,6 +567,23 @@
         link.download = `Guerza-FlipFlops-Simulation.png`;
         link.href = canvas.toDataURL();
         link.click();
+    }
+   function toggleFullScreen() {
+        let elem = document.getElementById("canvasWrapper");
+
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
     }
     // استدعاء دالة التغيير عند البداية لتظهر الصورة المناسبة للوضع الافتراضي RSH فوراً
     changeMode(currentMode);

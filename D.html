@@ -154,6 +154,85 @@
             border-bottom: 4px solid var(--primary);
             background: rgba(0, 212, 255, 0.1);
         }
+ /* زر التكبير العلوي */
+        .expand-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            background: var(--primary);
+            color: var(--dark-bg);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* إخفاء أزرار الشاشة الكاملة بالوضع العادي */
+        .fullscreen-controls {
+            display: none;
+        }
+
+        /* ========================================== */
+        /* تنسيقات الشاشة الكاملة الذكية المتجاوبة */
+        /* ========================================== */
+        :fullscreen #canvasWrapper, 
+        :-webkit-full-screen #canvasWrapper {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            background: var(--dark-bg) !important;
+            padding: 10px !important;
+            box-sizing: border-box !important;
+            border-radius: 0 !important;
+            border: none !important;
+        }
+
+        /* إخفاء زر التكبير في وضع ملء الشاشة */
+        :fullscreen .expand-btn, 
+        :-webkit-full-screen .expand-btn {
+            display: none;
+        }
+
+        /* ملاءمة الكانفاس لأقصى مساحة ممكنة مع المحافظة على الأبعاد */
+        :fullscreen #dCanvas, 
+        :-webkit-full-screen #dCanvas {
+            width: 100% !important;
+            height: auto !important;
+            max-height: calc(100vh - 80px) !important;
+            object-fit: contain;
+            background: white;
+            border-radius: 8px;
+            margin: auto 0;
+        }
+
+        /* شريط الأزرار في أسفل الشاشة الكاملة */
+        :fullscreen .fullscreen-controls, 
+        :-webkit-full-screen .fullscreen-controls {
+            display: flex !important;
+            gap: 12px;
+            width: 100%;
+            max-width: 600px;
+            justify-content: center;
+            padding: 5px 0;
+        }
+
+        .fullscreen-controls button {
+            flex: 1;
+            padding: 12px 6px;
+            font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+            white-space: nowrap;
+        }
+
+        .fullscreen-controls .exit-btn {
+            background: var(--danger) !important;
+            color: white !important;
+        }
     </style>
 </head>
 <body>
@@ -195,9 +274,20 @@
       <img src="photo_2026-08-09_22-52-27.png" alt="رمز القلاب D" style="max-width: 250px; width: 100%; height: auto; margin-top: 5px; margin-right: 55px; display: block; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
 </div>
 
-<div class="canvas-container">
-    <canvas id="dCanvas" width="1150" height="550"></canvas>
-</div>
+<!-- الحاوية الجديدة المزودة بزر التكبير وأزرار التحكم للشاشة الكاملة -->
+    <div id="canvasWrapper" class="canvas-container" style="position: relative;">
+        <!-- زر التكبير العادي -->
+        <button class="expand-btn" onclick="toggleFullScreen()">تكبير الشاشة ⛶</button>
+
+        <canvas id="dCanvas" width="1150" height="550"></canvas>
+
+        <!-- أزرار النبضة D الخاصة بوضع الشاشة الكاملة -->
+        <div class="fullscreen-controls">
+            <button class="btn-d" onclick="setSignalPulse('D', 1)">D = 1</button>
+            <button class="btn-d" style="border-bottom-color: #1b5e20;" onclick="setSignalPulse('D', 0)">D = 0</button>
+            <button class="exit-btn" onclick="toggleFullScreen()">خروج ✕</button>
+        </div>
+    </div>
 
 <div class="footer">
     من تصميم الأستاذ قرزة عبد الرؤوف | مخصص لطلاب السنة الثالثة تقني رياضي
@@ -452,6 +542,23 @@
     updateStaticSignals();
     calculateQ();
     draw();
+ function toggleFullScreen() {
+        let elem = document.getElementById("canvasWrapper");
+
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+    }
 </script>
 </body>
 </html>

@@ -152,6 +152,64 @@
             border-bottom: 4px solid var(--primary);
             background: rgba(0, 212, 255, 0.1);
         }
+ /* زر التكبير العلوي */
+        .expand-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            background: var(--primary);
+            color: var(--dark-bg);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .fullscreen-controls { display: none; }
+
+        /* وضع الشاشة الكاملة الذكي */
+        :fullscreen #canvasWrapper, 
+        :-webkit-full-screen #canvasWrapper {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            background: var(--dark-bg) !important;
+            padding: 10px !important;
+            box-sizing: border-box !important;
+            border-radius: 0 !important;
+            border: none !important;
+        }
+
+        :fullscreen .expand-btn, :-webkit-full-screen .expand-btn { display: none; }
+
+        :fullscreen #tCanvas, :-webkit-full-screen #tCanvas {
+            width: 100% !important;
+            height: auto !important;
+            max-height: calc(100vh - 70px) !important;
+            object-fit: contain;
+            background: white;
+            border-radius: 8px;
+            margin: auto 0;
+        }
+
+        :fullscreen .fullscreen-controls, :-webkit-full-screen .fullscreen-controls {
+            display: flex !important;
+            justify-content: center;
+            width: 100%;
+            padding: 5px 0;
+        }
+
+        .fullscreen-controls .exit-btn {
+            background: var(--danger) !important;
+            color: white !important;
+            min-width: 150px;
+        }
     </style>
 </head>
 <body>
@@ -180,15 +238,22 @@
             <button class="btn-reset" onclick="resetSim()">مسح الشاشة</button>
             <button style="background: var(--primary); color: var(--dark-bg);" onclick="downloadImage()">💾 حفظ PNG</button>
         </div>
-    </div>
-    <img src="photo_2026-08-09_23-31-20.png" alt="رمز القلاب T" style="max-width: 250px; width: 100%; height: auto; margin-top: -30px; margin-right: 55px; display: block; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-    <img src="photo_2026-08-09_23-32-56.png" alt="رمز القلاب T" style="max-width: 250px; width: 100%; height: auto; margin-top: -40px; margin-right: 55px; display: block; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+   </div>
+      <img src="photo_2026-08-09_23-31-20.png" alt="رمز القلاب T" style="max-width: 250px; width: 100%; height: auto; margin-top: -15px; margin-right: 55px; display: block; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+      <img src="photo_2026-08-09_23-32-56.png" alt="رمز القلاب T" style="max-width: 250px; width: 100%; height: auto; margin-top: -25px; margin-right: 55px; display: block; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+</div>
 </div>
 
-<div class="canvas-container">
+<!-- حاوية الكانفاس الجديدة المزودة بزر التكبير -->
+<div id="canvasWrapper" class="canvas-container" style="position: relative;">
+    <button class="expand-btn" onclick="toggleFullScreen()">تكبير الشاشة ⛶</button>
+
     <canvas id="tCanvas" width="1150" height="500"></canvas>
-</div>
 
+    <div class="fullscreen-controls">
+        <button class="exit-btn" onclick="toggleFullScreen()">خروج ✕</button>
+    </div>
+</div>
 <div class="footer">
     من تصميم الأستاذ قرزة عبد الرؤوف | مخصص لطلاب السنة الثالثة تقني رياضي
 </div>
@@ -412,6 +477,23 @@
     updateStaticSignals();
     calculateQ();
     draw();
+ function toggleFullScreen() {
+        let elem = document.getElementById("canvasWrapper");
+
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+    }
 </script>
 
 </body>
