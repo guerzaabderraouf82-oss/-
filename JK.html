@@ -313,86 +313,85 @@
             background: rgba(0, 212, 255, 0.1);
 
         }
- /* زر التكبير العلوي */
-        .expand-btn {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 10;
-            background: var(--primary);
-            color: var(--dark-bg);
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
+/* ========================================== */
+/* وضع الشاشة الكاملة الموحد (حاسوب وهاتف) */
+/* ========================================== */
 
-        /* إخفاء أزرار الشاشة الكاملة في الوضع العادي */
-        .fullscreen-controls {
-            display: none;
-        }
+#canvasWrapper {
+    position: relative;
+    transition: all 0.3s ease;
+}
 
-        /* ========================================== */
-        /* تنسيقات التكيف الذكي مع جميع أجهزة الشاشة الكاملة */
-        /* ========================================== */
-        :fullscreen #canvasWrapper, 
-        :-webkit-full-screen #canvasWrapper {
-            width: 100vw !important;
-            height: 100vh !important;
-            max-width: 100% !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            background: var(--dark-bg) !important;
-            padding: 10px !important;
-            box-sizing: border-box !important;
-            border-radius: 0 !important;
-            border: none !important;
-        }
+.expand-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    background: var(--primary);
+    color: var(--dark-bg);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
 
-        /* إخفاء زر التكبير داخل الشاشة الكاملة */
-        :fullscreen .expand-btn, 
-        :-webkit-full-screen .expand-btn {
-            display: none;
-        }
+.fullscreen-controls {
+    display: none;
+}
 
-        /* التكيف الذكي للكانفاس لملء أقصى مساحة ممكنة مع الحفاظ على الأبعاد */
-        :fullscreen #jkCanvas, 
-        :-webkit-full-screen #jkCanvas {
-            width: 100% !important;
-            height: auto !important;
-            max-height: calc(100vh - 80px) !important;
-            object-fit: contain;
-            background: white;
-            border-radius: 8px;
-            margin: auto 0;
-        }
+/* الكلاس الخاص بالتكبير - يعمل على جميع الشاشات */
+#canvasWrapper.is-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100% !important;
+    z-index: 999999 !important;
+    background: var(--dark-bg) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 15px !important;
+    box-sizing: border-box !important;
+    border-radius: 0 !important;
+    border: none !important;
+}
 
-        /* أزرار التحكم المتجاوبة أسفل الشاشة */
-        :fullscreen .fullscreen-controls, 
-        :-webkit-full-screen .fullscreen-controls {
-            display: flex !important;
-            gap: 8px;
-            width: 100%;
-            max-width: 900px;
-            justify-content: center;
-            padding: 5px 0;
-        }
+#canvasWrapper.is-fullscreen .expand-btn {
+    display: none !important;
+}
 
-        .fullscreen-controls button {
-            flex: 1;
-            padding: 12px 6px;
-            font-size: clamp(0.75rem, 2.5vw, 1rem);
-            white-space: nowrap;
-        }
+#canvasWrapper.is-fullscreen canvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: calc(100vh - 80px) !important;
+    object-fit: contain !important;
+    background: white !important;
+    border-radius: 8px !important;
+    margin: auto 0 !important;
+}
 
-        .fullscreen-controls .exit-btn {
-            background: var(--danger) !important;
-            color: white !important;
-        }
+#canvasWrapper.is-fullscreen .fullscreen-controls {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 15px !important;
+    width: 100% !important;
+    z-index: 1000000 !important;
+}
 
+.fullscreen-controls .exit-btn {
+    background: var(--danger) !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 25px !important;
+    font-size: 1rem !important;
+    font-weight: bold !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+}
     </style>
 
 </head>
@@ -990,23 +989,27 @@
     calculateQ();
 
     draw();
- function toggleFullScreen() {
-        let elem = document.getElementById("canvasWrapper");
+function toggleFullScreen() {
+    let wrapper = document.getElementById("canvasWrapper");
+    
+    // التبديل باستخدام الكلاس لضمان الظهور على كل الأجهزة
+    wrapper.classList.toggle("is-fullscreen");
 
-        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) {
-                elem.webkitRequestFullscreen();
-            }
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            }
+    // تفعيل وضع الشاشة الكاملة للمتصفح إن أمكن
+    if (wrapper.classList.contains("is-fullscreen")) {
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        } else if (document.documentElement.webkitRequestFullscreen) {
+            document.documentElement.webkitRequestFullscreen().catch(() => {});
+        }
+    } else {
+        if (document.exitFullscreen && document.fullscreenElement) {
+            document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen && document.webkitFullscreenElement) {
+            document.webkitExitFullscreen().catch(() => {});
         }
     }
+}
 
 </script>
 
