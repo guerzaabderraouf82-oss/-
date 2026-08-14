@@ -510,28 +510,49 @@
         ctx.restore();
     }
 
-    function drawWave(data, yBase, color, isQ = false) {
+function drawWave(data, yBase, color, isQ = false) {
         ctx.save();
         ctx.strokeStyle = color;
         ctx.lineWidth = 5;
         ctx.lineJoin = 'round';
         ctx.beginPath();
         let x = config.startX;
+        
+        // تم زيادة الإزاحة هنا لتصبح 4 بكسل لتظهر بشكل موازٍ وواضح للخط المتقطع
+        // ولكن سنقوم بتطبيقها فقط إذا لم تكن هذه موجة Q.
+        const effectiveOffset = (isQ) ? 0 : 8; 
+
         for (let i = 0; i < data.length; i++) {
             let val = data[i];
             let y = (val === 1) ? yBase - 65 : (val === 0 ? yBase : yBase - 32);
+            
+            // تطبيق الإزاحة عند الجبهة النازلة ( edgeFalling ) حصراً للمدخلات.
             let nextX = config.startX + (i + 1) * config.step;
-            if (i === 0) { ctx.moveTo(x, y); } else {
+            if (!isQ && currentMode === 'RSH' && dataStore[currentMode].edge === 'falling') {
+                nextX += effectiveOffset; 
+            }
+
+            if (i === 0) {
+                // نقطة البداية للموجة، تُزاح للمدخلات فقط
+                ctx.moveTo(x + ((!isQ && currentMode === 'RSH' && dataStore[currentMode].edge === 'falling') ? effectiveOffset : 0), y);
+            } else {
                 if (isQ && currentMode === 'RSH') {
+                    // معالجة Q حصراً لضمان التزامن مع الجبهة
                     let edge = dataStore['RSH'].edge;
                     let triggerX = (edge === 'rising') ? (x + config.step/2) : (x + config.step);
+                    
                     ctx.lineTo(triggerX, (data[i-1] === 1 ? yBase-65 : (data[i-1] === 0 ? yBase : yBase-32)));
                     ctx.lineTo(triggerX, y);
+                    
+                    // تحديث x بـ rawNextX (دون إزاحة) لـ Q
+                    x = config.startX + (i + 1) * config.step; 
+                    continue; // تجاوز الرسم التلقائي بالأسفل لـ Q
                 } else {
                     ctx.lineTo(x, (data[i-1] === 1 ? yBase-65 : (data[i-1] === 0 ? yBase : yBase-32)));
                     ctx.lineTo(x, y);
                 }
             }
+            // تجاوز خطوة triggerX لـ Q بسبب continue بالأعلى، هنا فقط للمدخلات
             ctx.lineTo(nextX, y);
             x = nextX;
         }
