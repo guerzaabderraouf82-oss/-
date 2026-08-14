@@ -520,7 +520,7 @@ function drawWave(data, yBase, color, isQ = false) {
         
         // تم زيادة الإزاحة هنا لتصبح 4 بكسل لتظهر بشكل موازٍ وواضح للخط المتقطع
         // ولكن سنقوم بتطبيقها فقط إذا لم تكن هذه موجة Q.
-        const effectiveOffset = (isQ) ? 0 : 8; 
+        const effectiveOffset = (isQ) ? 0 : 12; 
 
         for (let i = 0; i < data.length; i++) {
             let val = data[i];
