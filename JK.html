@@ -864,51 +864,49 @@
 
 
 
-       allSignals.forEach((sig, index) => {
+      allSignals.forEach((sig, index) => {
             const baseY = (index + 1) * 95;
             ctx.strokeStyle = "#2c3e50"; ctx.lineWidth = 2;
             
-            // رسم محور الزمن الأفقي (متروك تماماً كما عدلته أنت)
+            // رسم محور الزمن الأفقي
             drawArrow(ctx, startX, baseY, startX + width + 30, baseY);
             ctx.fillStyle = "#2c3e50";
             
-            // تعديل 1: جعل حرف الزمن t مائل وبحجم أوضح (Georgia) (متروك تماماً كما عدلته أنت)
+            // حرف الزمن t مائل وبحجم أوضح
             ctx.font = "italic bold 22px Georgia, 'Times New Roman', serif";
             ctx.fillText("t", startX + width + 45, baseY + 5);
 
             // رسم المحور العمودي للإشارة
             drawArrow(ctx, startX, baseY, startX, baseY - 65);
             
-            // تعديل 2: تلوين الحرف بنفس لون المنحنى الخاص به ديناميكياً
+            // تلوين الحرف بنفس لون المنحنى الخاص به ديناميكياً
             ctx.fillStyle = sig.color; 
             
-            // تعديل 3: تطبيق الخط المائل ذو الحواف الكلاسيكية وتكبير الحجم ليصبح 32px
+            // تطبيق الخط المائل الكلاسيكي وتكبير الحجم
             ctx.font = "italic bold 32px Georgia, 'Times New Roman', serif";
             
             let nameOnly = sig.name.replace('_BAR', '');
-            let textX = 90; // الإحداثي الخاص بك حافظت عليه تماماً
+            let textX = 90;
             ctx.fillText(nameOnly, textX, baseY - 15);
 
-            // قياس العرض الفعلي للنص لاستخدامه في الحسابات عند الحاجة
+            // قياس العرض الفعلي للنص لاستخدامه في الحسابات
             let textMetrics = ctx.measureText(nameOnly);
 
-            // تعديل 4 منفصل: إحداثيات بار الـ PR_BAR فقط
+            // إحداثيات بار الـ PR_BAR فقط
             if (sig.name === 'PR_BAR') {
                 ctx.strokeStyle = sig.color; 
                 ctx.lineWidth = 2.5;
                 ctx.beginPath();
-                // يمكنك تعديل الأرقام بالأسفل بحرية حتى يتطابق فوق PR تماماً
                 ctx.moveTo(textX - 55, baseY - 43); 
                 ctx.lineTo(textX + textMetrics.width - 40, baseY - 43);
                 ctx.stroke();
             }
 
-            // تعديل 5 منفصل: إحداثيات بار الـ CLR_BAR فقط (الذي قمت أنت بضبطه)
+            // إحداثيات بار الـ CLR_BAR فقط
             if (sig.name === 'CLR_BAR') {
                 ctx.strokeStyle = sig.color; 
                 ctx.lineWidth = 2.5;
                 ctx.beginPath();
-                // الأرقام الحالية التي ضبطتها أنت لـ CLR حافظت عليها كما هي
                 ctx.moveTo(textX - 75, baseY - 43); 
                 ctx.lineTo(textX + textMetrics.width - 60, baseY - 43);
                 ctx.stroke();
@@ -953,19 +951,27 @@
 
             } else {
 
+                // التعديل الأساسي هنا: إضافة إزاحة بصرية فقط لـ J و K عند الجبهة الصاعدة
+                let visualOffset = 0;
+                if ((sig.name === 'J' || sig.name === 'K') && currentEdge === 'rising') {
+                    visualOffset = 6; // مقدار الإزاحة البصرية (6 بكسل)
+                }
+
                 ctx.beginPath();
 
                 if (sig.data.length > 0) {
 
                     let lastY = sig.data[0][1] ? baseY - 35 : baseY;
 
-                    ctx.moveTo(startX + sig.data[0][0], lastY);
+                    // تطبيق الإزاحة البصرية هنا عند البداية
+                    ctx.moveTo(startX + sig.data[0][0] + visualOffset, lastY);
 
                     sig.data.forEach(p => {
 
                         const ty = p[1] ? baseY - 35 : baseY;
 
-                        ctx.lineTo(startX + p[0], lastY); ctx.lineTo(startX + p[0], ty);
+                        // تطبيق الإزاحة البصرية عند النقاط الأفقية والعمودية
+                        ctx.lineTo(startX + p[0] + visualOffset, lastY); ctx.lineTo(startX + p[0] + visualOffset, ty);
 
                         lastY = ty;
 
