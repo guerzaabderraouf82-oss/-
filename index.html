@@ -281,6 +281,7 @@
         <div class="control-group">
             <div class="control-label">إدارة المحاكاة</div>
             <div class="btn-group">
+                <button id="toggleQBtn" style="border: 1px solid var(--success); background: transparent; color: var(--success); flex: 2; font-size: 0.8rem;" onclick="toggleQVisible()">إخفاء Q 👁️</button>
                 <button class="sys-btn-reset" onclick="resetCurrent()">مسح</button>
                 <button class="sys-btn-undo" onclick="undoLastPoint()">تراجع</button>
                 <button class="sys-btn-save" onclick="download()">PNG</button>
@@ -330,6 +331,7 @@
     };
 
     let currentMode = 'RSH';
+    let isQVisible = true; // متغير للتحكم في إظهار أو إخفاء منحنى النتيجة Q
     const config = {
         maxPoints: 14,
         step: 75,
@@ -578,8 +580,31 @@ function drawWave(data, yBase, color, isQ = false) {
         drawWave(currentHistory.R, config.yBases.R, '#e74c3c');
         drawAxis(config.yBases.S, 'S', '#3498db');
         drawWave(currentHistory.S, config.yBases.S, '#3498db');
+      // رسم المحور والرمز Q دائماً ليبقى المخطط مكتملاً
         drawAxis(config.yBases.Q, 'Q', '#2ecc71');
-        drawWave(currentHistory.Q, config.yBases.Q, '#2ecc71', true);
+        
+        // رسم النبضات (المنحنى) فقط إذا كان خيار الإظهار مفعلاً
+        if (isQVisible) {
+            drawWave(currentHistory.Q, config.yBases.Q, '#2ecc71', true);
+        }
+    }
+
+   function toggleQVisible() {
+        isQVisible = !isQVisible; // تبديل الحالة
+        const btn = document.getElementById('toggleQBtn');
+        
+        if (isQVisible) {
+            btn.innerHTML = 'إخفاء Q 👁️';
+            btn.style.color = 'var(--success)';
+            btn.style.borderColor = 'var(--success)';
+            btn.style.background = 'transparent';
+        } else {
+            btn.innerHTML = 'إظهار Q 🙈';
+            btn.style.color = 'var(--warning)';
+            btn.style.borderColor = 'var(--warning)';
+            btn.style.background = 'rgba(241, 196, 15, 0.1)';
+        }
+        render(); // إعادة رسم اللوحة لتحديث العرض فوراً
     }
 
     function resetCurrent() {

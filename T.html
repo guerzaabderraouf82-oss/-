@@ -256,7 +256,7 @@
         <span class="label">أوامر المختبر</span>
         <div class="action-btns">
             <a href="index.html" class="nav-link btn-back">⬅ الرئيسية</a>
-            <button class="btn-reset" onclick="resetSim()">مسح الشاشة</button>
+            <button id="toggleQBtn" style="border: 1px solid var(--success); background: transparent; color: var(--success);" onclick="toggleQVisible()">إخفاء Q 👁️</button>
             <button style="background: var(--primary); color: var(--dark-bg);" onclick="downloadImage()">💾 حفظ PNG</button>
         </div>
    </div>
@@ -287,7 +287,8 @@
     const width = 950;
     const step = 44; 
     let currentEdge = 'falling';
-    let activeLevel = 'high'; 
+    let activeLevel = 'high';
+    let isQVisible = true; // متغير للتحكم في إظهار أو إخفاء منحنى النتيجة Q 
 
     const baseForcingData = {
         PR: [[0,0], [380,1], [530,0], [950,0]],
@@ -389,6 +390,24 @@
         });
     }
 
+  function toggleQVisible() {
+        isQVisible = !isQVisible; // عكس الحالة الحالية
+        const btn = document.getElementById('toggleQBtn');
+        
+        if (isQVisible) {
+            btn.innerHTML = 'إخفاء Q 👁️';
+            btn.style.color = 'var(--success)';
+            btn.style.borderColor = 'var(--success)';
+            btn.style.background = 'transparent';
+        } else {
+            btn.innerHTML = 'إظهار Q 🙈';
+            btn.style.color = 'var(--warning)';
+            btn.style.borderColor = 'var(--warning)';
+            btn.style.background = 'rgba(241, 196, 15, 0.1)';
+        }
+        draw(); // إعادة رسم اللوحة لتطبيق التغيير فوراً
+    }
+
     function resetSim() {
         dynamicData.Q = [[0,0]];
         calculateQ();
@@ -479,6 +498,11 @@
                     ctx.fill();
                 }
             } else {
+
+                // التحقق: إذا كانت الإشارة هي Q وخيار الرؤية ملغى، فلن نقوم برسم النبضات
+                if (sig.name === 'Q' && !isQVisible) {
+                    // نتجاوز رسم النبضات لنبقي المحور والرمز فقط ظاهرين
+            } else {
                 ctx.beginPath();
                 if (sig.data.length > 0) {
                     let lastY = sig.data[0][1] ? baseY - 35 : baseY;
@@ -491,6 +515,7 @@
                     if (sig.name === 'Q') { ctx.lineTo(startX + width, lastY); }
                 }
                 ctx.stroke();
+               }
             }
         });
     }

@@ -265,6 +265,7 @@
         <span class="label">الأوامر</span>
         <div class="action-btns">
             <a href="index.html" class="nav-link btn-back">⬅ الرئيسية</a>
+            <button id="toggleQBtn" style="border: 1px solid var(--success); background: transparent; color: var(--success);" onclick="toggleQVisible()">إخفاء Q 👁️</button>
             <button class="btn-reset" onclick="resetSim()">مسح</button>
             <button onclick="undoLastMove()">⟲ تراجع</button>
             <button style="background: var(--primary); color: var(--dark-bg);" onclick="downloadImage()">💾 حفظ</button>
@@ -303,6 +304,7 @@
     let currentEdge = 'falling';
     let activeLevel = 'high'; 
     let actionHistory = [];
+    let isQVisible = true; // متغير للتحكم في إظهار أو إخفاء منحنى النتيجة Q
 
     const baseForcingData = {
         PR: [[0,0], [380,1], [530,0], [950,0]],
@@ -430,6 +432,24 @@
         });
     }
 
+   function toggleQVisible() {
+        isQVisible = !isQVisible; // عكس الحالة الحالية
+        const btn = document.getElementById('toggleQBtn');
+        
+        if (isQVisible) {
+            btn.innerHTML = 'إخفاء Q 👁️';
+            btn.style.color = 'var(--success)';
+            btn.style.borderColor = 'var(--success)';
+            btn.style.background = 'transparent';
+        } else {
+            btn.innerHTML = 'إظهار Q 🙈';
+            btn.style.color = 'var(--warning)';
+            btn.style.borderColor = 'var(--warning)';
+            btn.style.background = 'rgba(241, 196, 15, 0.1)';
+        }
+        draw(); // إعادة رسم اللوحة لتطبيق التغيير فوراً
+    }
+
     function resetSim() {
         dynamicData.D = [[0,0]]; dynamicData.Q = [[0,0]];
         actionHistory = [];
@@ -524,7 +544,13 @@
                     }
                     ctx.fill();
                 }
-            } else {
+            
+           } else {
+
+                // التحقق: إذا كانت الإشارة هي Q وخيار الرؤية ملغى، فلن نقوم برسم النبضات
+                if (sig.name === 'Q' && !isQVisible) {
+                    // نتجاوز رسم النبضات لنبقي المحور والرمز فقط ظاهرين
+              } else {
                 // التعديل الأساسي هنا: إضافة إزاحة بصرية فقط لـ D عند الجبهة الصاعدة
                 let visualOffset = 0;
                 if (sig.name === 'D' && currentEdge === 'rising') {
@@ -548,6 +574,7 @@
                     if (sig.name === 'Q') { ctx.lineTo(startX + width, lastY); }
                 }
                 ctx.stroke();
+               }
             }
         });
     }
