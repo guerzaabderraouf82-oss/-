@@ -271,10 +271,11 @@
         <div class="control-group">
             <div class="control-label">إشارات المدخلات</div>
             <div class="btn-group">
-                <button class="btn-r" onclick="addPoint('R', 1)">R=1</button>
-                <button class="btn-r" onclick="addPoint('R', 0)">R=0</button>
-                <button class="btn-s" onclick="addPoint('S', 1)">S=1</button>
-                <button class="btn-s" onclick="addPoint('S', 0)">S=0</button>
+                <button id="inputsModeBtn" style="border: 2px solid var(--secondary); background: transparent; color: var(--secondary); font-size: 0.8rem; flex: 2;" onclick="toggleInputsBar()">مداخل عادية (R,S) 🔄</button>
+                <button id="btnR1" class="btn-r" onclick="addPoint('R', 1)">R=1</button>
+                <button id="btnR0" class="btn-r" onclick="addPoint('R', 0)">R=0</button>
+                <button id="btnS1" class="btn-s" onclick="addPoint('S', 1)">S=1</button>
+                <button id="btnS0" class="btn-s" onclick="addPoint('S', 0)">S=0</button>
             </div>
         </div>
 
@@ -332,6 +333,7 @@
 
     let currentMode = 'RSH';
     let isQVisible = true; // متغير للتحكم في إظهار أو إخفاء منحنى النتيجة Q
+    let areInputsBar = false; // متغير للتبديل بين المداخل العادية ومداخل البار
     const config = {
         maxPoints: 14,
         step: 75,
@@ -374,22 +376,44 @@
    function addPoint(type, val) {
         let store = dataStore[currentMode].history;
         if (store.R.length >= config.maxPoints) return;
-        
-        if (type === 'R') {
-            store.R.push(val);
-            // التعديل: إذا تم جعل R=1، يتم إنزال S تلقائياً إلى 0 لمنع الحالة الممنوعة
-            if (val === 1) {
-                store.S.push(0);
+
+        if (areInputsBar) {
+            // فصل المنطق تماماً ومنع الحالة الممنوعة (0,0) في نمط البار
+            if (type === 'R') {
+                let currentS = store.S.length > 0 ? store.S[store.S.length - 1] : 1;
+                if (val === 0 && currentS === 0) {
+                    store.R.push(0);
+                    store.S.push(1); // إرغام S̄ على الارتفاع لـ 1 لمنع الحالة الممنوعة
+                } else {
+                    store.R.push(val);
+                    store.S.push(currentS);
+                }
             } else {
-                store.S.push(store.S[store.S.length-1]);
+                let currentR = store.R.length > 0 ? store.R[store.R.length - 1] : 1;
+                if (val === 0 && currentR === 0) {
+                    store.S.push(0);
+                    store.R.push(1); // إرغام R̄ على الارتفاع لـ 1 لمنع الحالة الممنوعة
+                } else {
+                    store.S.push(val);
+                    store.R.push(currentR);
+                }
             }
         } else {
-            store.S.push(val);
-            // التعديل: إذا تم جعل S=1، يتم إنزال R تلقائياً إلى 0 لمنع الحالة الممنوعة
-            if (val === 1) {
-                store.R.push(0);
+            // نمط RS العادي
+            if (type === 'R') {
+                store.R.push(val);
+                if (val === 1) {
+                    store.S.push(0);
+                } else {
+                    store.S.push(store.S[store.S.length - 1]);
+                }
             } else {
-                store.R.push(store.R[store.R.length-1]);
+                store.S.push(val);
+                if (val === 1) {
+                    store.R.push(0);
+                } else {
+                    store.R.push(store.R[store.R.length - 1]);
+                }
             }
         }
         recalcQ();
@@ -398,7 +422,8 @@
 
     function undoLastPoint() {
         let store = dataStore[currentMode].history;
-        if (store.R.length > 1) {
+        let minLength = areInputsBar ? 0 : 1;
+        if (store.R.length > minLength) {
             store.R.pop();
             store.S.pop();
             recalcQ();
@@ -406,28 +431,52 @@
         }
     }
 
-    function recalcQ() {
+ function recalcQ() {
         let store = dataStore[currentMode].history;
-        store.Q = [0];
-        let lastQ = 0;
+        if (store.R.length === 0) {
+            store.Q = [];
+            return;
+        }
+
+        // تحديد الحالة الابتدائية لـ Q ديناميكياً بناءً على أول خطوة للمدخلات في نمط البار
+        let initialQ = 0; // القيمة الافتراضية للعادي، وأيضاً للبار في حالة الذاكرة (1,1)
+        if (areInputsBar) {
+            let firstR = store.R[0];
+            let firstS = store.S[0];
+            if (firstS === 0 && firstR === 1) {
+                initialQ = 1; // S̄=0 و R̄=1 تعني تفعيل Set والبداية من 1
+            } else if (firstS === 1 && firstR === 0) {
+                initialQ = 0; // S̄=1 و R̄=0 تعني تفعيل Reset والبداية من 0
+            }
+        }
+
+        store.Q = [initialQ];
+        let lastQ = initialQ;
+
         for (let i = 1; i < store.R.length; i++) {
             let r = store.R[i];
             let s = store.S[i];
             let currentQ = lastQ;
-            if (currentMode === 'RS') {
-                if (s === 1 && r === 0) currentQ = 1;
-                else if (s === 0 && r === 1) currentQ = 0;
-                else if (s === 1 && r === 1) currentQ = -1; 
+
+            if (areInputsBar) {
+                // منطق القلاب ذو المداخل النشطة منخفضاً (R̄, S̄)
+                if (s === 0 && r === 1) currentQ = 1;      // S̄=0 -> Set
+                else if (s === 1 && r === 0) currentQ = 0; // R̄=0 -> Reset
+                else if (s === 0 && r === 0) {
+                    currentQ = (currentMode === 'RS') ? -1 : NaN; // حالة ممنوعة (تم حظرها بالتفاعل، للتأمين فقط)
+                } else currentQ = lastQ;                  // حالة الذاكرة (1,1)
             } else {
+                // منطق القلاب العادي (R, S)
                 if (s === 1 && r === 0) currentQ = 1;
                 else if (s === 0 && r === 1) currentQ = 0;
-                else if (s === 1 && r === 1) currentQ = NaN; 
-                else currentQ = lastQ;
+                else if (s === 1 && r === 1) {
+                    currentQ = (currentMode === 'RS') ? -1 : NaN;
+                } else currentQ = lastQ;
             }
             store.Q.push(currentQ);
             lastQ = (isNaN(currentQ) || currentQ === -1) ? 0 : currentQ;
         }
-    }
+    } 
 
     function drawArrowHead(x, y, angle) {
         ctx.save();
@@ -513,6 +562,7 @@
     }
 
 function drawWave(data, yBase, color, isQ = false) {
+        if (data.length === 0) return;
         ctx.save();
         ctx.strokeStyle = color;
         ctx.lineWidth = 5;
@@ -576,9 +626,12 @@ function drawWave(data, yBase, color, isQ = false) {
             drawAxis(config.yBases.H, 'H', '#34495e');
             drawClock();
         }
-        drawAxis(config.yBases.R, 'R', '#e74c3c');
+        let labelR = areInputsBar ? 'R̄' : 'R';
+        let labelS = areInputsBar ? 'S̄' : 'S';
+
+        drawAxis(config.yBases.R, labelR, '#e74c3c');
         drawWave(currentHistory.R, config.yBases.R, '#e74c3c');
-        drawAxis(config.yBases.S, 'S', '#3498db');
+        drawAxis(config.yBases.S, labelS, '#3498db');
         drawWave(currentHistory.S, config.yBases.S, '#3498db');
       // رسم المحور والرمز Q دائماً ليبقى المخطط مكتملاً
         drawAxis(config.yBases.Q, 'Q', '#2ecc71');
@@ -588,7 +641,36 @@ function drawWave(data, yBase, color, isQ = false) {
             drawWave(currentHistory.Q, config.yBases.Q, '#2ecc71', true);
         }
     }
+  function toggleInputsBar() {
+        areInputsBar = !areInputsBar;
+        const modeBtn = document.getElementById('inputsModeBtn');
+        const r1 = document.getElementById('btnR1');
+        const r0 = document.getElementById('btnR0');
+        const s1 = document.getElementById('btnS1');
+        const s0 = document.getElementById('btnS0');
 
+        resetCurrent(); // تصفير المحاكاة عند التحويل لضمان عدم حدوث تداخل
+
+        if (areInputsBar) {
+            modeBtn.innerHTML = 'مداخل بالبار (R̄,S̄) 👁️';
+            modeBtn.style.color = 'var(--warning)';
+            modeBtn.style.borderColor = 'var(--warning)';
+            r1.innerHTML = 'R̄=1'; r0.innerHTML = 'R̄=0';
+            s1.innerHTML = 'S̄=1'; s0.innerHTML = 'S̄=0';
+            dataStore['RS'].history = { R: [], S: [], Q: [] };
+            dataStore['RSH'].history = { R: [], S: [], Q: [] };
+        } else {
+            modeBtn.innerHTML = 'مداخل عادية (R,S) 🔄';
+            modeBtn.style.color = 'var(--secondary)';
+            modeBtn.style.borderColor = 'var(--secondary)';
+            r1.innerHTML = 'R=1'; r0.innerHTML = 'R=0';
+            s1.innerHTML = 'S=1'; s0.innerHTML = 'S=0';
+            dataStore['RS'].history = { R: [0], S: [0], Q: [0] };
+            dataStore['RSH'].history = { R: [0], S: [0], Q: [0] };
+        }
+        recalcQ();
+        render();
+    }
    function toggleQVisible() {
         isQVisible = !isQVisible; // تبديل الحالة
         const btn = document.getElementById('toggleQBtn');
@@ -607,8 +689,12 @@ function drawWave(data, yBase, color, isQ = false) {
         render(); // إعادة رسم اللوحة لتحديث العرض فوراً
     }
 
-    function resetCurrent() {
-        dataStore[currentMode].history = { R: [0], S: [0], Q: [0] };
+   function resetCurrent() {
+        if (areInputsBar) {
+            dataStore[currentMode].history = { R: [], S: [], Q: [] };
+        } else {
+            dataStore[currentMode].history = { R: [0], S: [0], Q: [0] };
+        }
         render();
     }
 
